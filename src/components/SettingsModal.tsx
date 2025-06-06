@@ -1,12 +1,7 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { X, Plus, Trash2, Mail } from 'lucide-react';
 import { EmailSettings } from '../types/types';
-import { useToast } from '@/hooks/use-toast';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -15,198 +10,247 @@ interface SettingsModalProps {
   onSave: (settings: EmailSettings) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings, onSave }) => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState<EmailSettings>(settings);
-  const [newRecipient, setNewRecipient] = useState('');
-  const [newCcRecipient, setNewCcRecipient] = useState('');
+const SettingsModal: React.FC<SettingsModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  settings, 
+  onSave 
+}) => {
+  const [localSettings, setLocalSettings] = useState<EmailSettings>(settings);
+  const [newEmail, setNewEmail] = useState('');
+  const [newCcEmail, setNewCcEmail] = useState('');
+
+  // Update local settings when props change
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
 
   const handleSave = () => {
-    onSave(formData);
+    console.log('Saving settings from modal:', localSettings);
+    onSave(localSettings);
     onClose();
-    toast({
-      title: "Settings Saved",
-      description: "Email settings have been updated successfully.",
-    });
   };
 
-  const addRecipient = (type: 'recipients' | 'ccRecipients') => {
-    const email = type === 'recipients' ? newRecipient : newCcRecipient;
-    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFormData(prev => ({
-        ...prev,
-        [type]: [...prev[type], email]
-      }));
-      if (type === 'recipients') {
-        setNewRecipient('');
-      } else {
-        setNewCcRecipient('');
-      }
+  const addEmail = (type: 'recipients' | 'ccRecipients') => {
+    const emailToAdd = type === 'recipients' ? newEmail : newCcEmail;
+    
+    if (!emailToAdd.trim()) return;
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailToAdd)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    setLocalSettings(prev => ({
+      ...prev,
+      [type]: [...prev[type], emailToAdd.trim()]
+    }));
+
+    // Clear input
+    if (type === 'recipients') {
+      setNewEmail('');
+    } else {
+      setNewCcEmail('');
     }
   };
 
-  const removeRecipient = (type: 'recipients' | 'ccRecipients', index: number) => {
-    setFormData(prev => ({
+  const removeEmail = (type: 'recipients' | 'ccRecipients', index: number) => {
+    setLocalSettings(prev => ({
       ...prev,
       [type]: prev[type].filter((_, i) => i !== index)
     }));
   };
 
-  const updateNotification = (key: keyof EmailSettings['notifications'], value: boolean) => {
-    setFormData(prev => ({
+  const toggleNotification = (key: keyof EmailSettings['notifications']) => {
+    setLocalSettings(prev => ({
       ...prev,
       notifications: {
         ...prev.notifications,
-        [key]: value
+        [key]: !prev.notifications[key]
       }
     }));
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-slate-900">
-            Email Settings
-          </DialogTitle>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-6 py-4">
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            Email Settings
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
           {/* Primary Recipients */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
               Primary Recipients
-            </Label>
-            <div className="space-y-2">
-              {formData.recipients.map((email, index) => (
-                <div key={index} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                  <span className="text-sm text-slate-700">{email}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => removeRecipient('recipients', index)}
-                    className="text-red-600 hover:bg-red-50 border-red-200 px-2 py-1 h-7"
+            </label>
+            
+            {/* Current recipients */}
+            <div className="space-y-2 mb-3">
+              {localSettings.recipients.map((email, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                  <span className="text-sm text-gray-700">{email}</span>
+                  <button
+                    onClick={() => removeEmail('recipients', index)}
+                    className="text-red-500 hover:text-red-700 transition-colors"
                   >
-                    Remove
-                  </Button>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter email address"
-                  value={newRecipient}
-                  onChange={(e) => setNewRecipient(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addRecipient('recipients')}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={() => addRecipient('recipients')}
-                  disabled={!newRecipient}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Add
-                </Button>
-              </div>
+            </div>
+
+            {/* Add new recipient */}
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Enter email address..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => e.key === 'Enter' && addEmail('recipients')}
+              />
+              <button
+                onClick={() => addEmail('recipients')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
             </div>
           </div>
 
           {/* CC Recipients */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-700">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
               CC Recipients
-            </Label>
-            <div className="space-y-2">
-              {formData.ccRecipients.map((email, index) => (
-                <div key={index} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                  <span className="text-sm text-slate-700">{email}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => removeRecipient('ccRecipients', index)}
-                    className="text-red-600 hover:bg-red-50 border-red-200 px-2 py-1 h-7"
+            </label>
+            
+            {/* Current CC recipients */}
+            <div className="space-y-2 mb-3">
+              {localSettings.ccRecipients.map((email, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                  <span className="text-sm text-gray-700">{email}</span>
+                  <button
+                    onClick={() => removeEmail('ccRecipients', index)}
+                    className="text-red-500 hover:text-red-700 transition-colors"
                   >
-                    Remove
-                  </Button>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter email address"
-                  value={newCcRecipient}
-                  onChange={(e) => setNewCcRecipient(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addRecipient('ccRecipients')}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={() => addRecipient('ccRecipients')}
-                  disabled={!newCcRecipient}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Add
-                </Button>
-              </div>
+            </div>
+
+            {/* Add new CC recipient */}
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={newCcEmail}
+                onChange={(e) => setNewCcEmail(e.target.value)}
+                placeholder="Enter CC email address..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => e.key === 'Enter' && addEmail('ccRecipients')}
+              />
+              <button
+                onClick={() => addEmail('ccRecipients')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
             </div>
           </div>
 
-          {/* Notification Preferences */}
-          <div className="space-y-4 border-t border-slate-200 pt-6">
-            <Label className="text-sm font-medium text-slate-700">
+          {/* Notification Settings */}
+          <div className="border-t pt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-4">
               Notification Preferences
-            </Label>
+            </label>
+            
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-700">New Request Notifications</p>
-                  <p className="text-xs text-slate-500">Get notified when new damage reports are submitted</p>
+                <div>
+                  <div className="text-sm font-medium text-gray-700">New Request Notifications</div>
+                  <div className="text-xs text-gray-500">Get notified when new damage reports are submitted</div>
                 </div>
-                <Switch
-                  checked={formData.notifications.newRequest}
-                  onCheckedChange={(checked) => updateNotification('newRequest', checked)}
-                />
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.notifications.newRequest}
+                    onChange={() => toggleNotification('newRequest')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-700">Status Update Notifications</p>
-                  <p className="text-xs text-slate-500">Get notified when request status changes</p>
+                <div>
+                  <div className="text-sm font-medium text-gray-700">Status Update Notifications</div>
+                  <div className="text-xs text-gray-500">Get notified when request status changes</div>
                 </div>
-                <Switch
-                  checked={formData.notifications.statusUpdate}
-                  onCheckedChange={(checked) => updateNotification('statusUpdate', checked)}
-                />
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.notifications.statusUpdate}
+                    onChange={() => toggleNotification('statusUpdate')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-700">Completion Notifications</p>
-                  <p className="text-xs text-slate-500">Get notified when requests are completed</p>
+                <div>
+                  <div className="text-sm font-medium text-gray-700">Completion Notifications</div>
+                  <div className="text-xs text-gray-500">Get notified when requests are completed</div>
                 </div>
-                <Switch
-                  checked={formData.notifications.completion}
-                  onCheckedChange={(checked) => updateNotification('completion', checked)}
-                />
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSettings.notifications.completion}
+                    onChange={() => toggleNotification('completion')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4">
-          <Button
-            variant="outline"
+        {/* Footer */}
+        <div className="flex gap-3 p-6 border-t bg-gray-50">
+          <button
             onClick={onClose}
-            className="flex-1"
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleSave}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Save Settings
-          </Button>
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 

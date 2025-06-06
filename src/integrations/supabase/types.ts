@@ -9,80 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      excel_data: {
+      damage_requests: {
         Row: {
           id: string
-          material: string | null
-          panel_no: string | null
-          project_id: string
+          glider_name: string
+          order_number: string
+          reason: string
+          panels: Json
+          status: string
+          submitted_at: string
+          updated_at: string
+          notes: string | null
+          created_at: string
         }
         Insert: {
           id?: string
-          material?: string | null
-          panel_no?: string | null
-          project_id: string
+          glider_name: string
+          order_number: string
+          reason: string
+          panels: Json
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          notes?: string | null
+          created_at?: string
         }
         Update: {
           id?: string
-          material?: string | null
-          panel_no?: string | null
-          project_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "excel_data_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      filter_keywords: {
-        Row: {
-          created_at: string | null
-          id: string
-          keyword: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          keyword: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          keyword?: string
+          glider_name?: string
+          order_number?: string
+          reason?: string
+          panels?: Json
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          notes?: string | null
+          created_at?: string
         }
         Relationships: []
       }
-      projects: {
+      email_settings: {
         Row: {
-          created_at: string
-          excel_data: Json | null
-          highlighted_cells: Json | null
           id: string
-          name: string
-          order_no: string | null
-          shop_order_note: string | null
+          recipients: Json
+          cc_recipients: Json
+          notifications: Json
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string
-          excel_data?: Json | null
-          highlighted_cells?: Json | null
           id?: string
-          name: string
-          order_no?: string | null
-          shop_order_note?: string | null
+          recipients: Json
+          cc_recipients: Json
+          notifications: Json
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string
-          excel_data?: Json | null
-          highlighted_cells?: Json | null
           id?: string
-          name?: string
-          order_no?: string | null
-          shop_order_note?: string | null
+          recipients?: Json
+          cc_recipients?: Json
+          notifications?: Json
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

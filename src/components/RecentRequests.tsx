@@ -72,8 +72,7 @@ const RecentRequests: React.FC<RecentRequestsProps> = ({ requests, onStatusUpdat
           key={request.id}
           className="border border-slate-200 rounded-lg p-4 bg-gradient-to-r from-white to-slate-50 hover:shadow-md transition-all duration-200"
         >
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-            <div className="flex-1 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">            <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-medium text-slate-900">{request.gliderName}</h3>
                 <Badge className={`text-xs ${getStatusColor(request.status)}`}>
@@ -82,23 +81,9 @@ const RecentRequests: React.FC<RecentRequestsProps> = ({ requests, onStatusUpdat
               </div>
               
               <div className="text-sm text-slate-600 space-y-1">
-                <p><span className="font-medium">Glider:</span> {request.gliderName}</p>
-                <p><span className="font-medium">Panels:</span> {request.panels.length}</p>
-                <div className="pl-4 mt-1 border-l-2 border-slate-200">
-                  {request.panels.slice(0, 2).map((panel, idx) => (
-                    <p key={idx} className="text-xs text-slate-500">
-                      {panel.panelType} ({panel.material.split(' ')[0]}) - {panel.side}
-                    </p>
-                  ))}
-                  {request.panels.length > 2 && (
-                    <p className="text-xs text-slate-400 italic">
-                      +{request.panels.length - 2} more panels
-                    </p>
-                  )}
-                </div>
-                <p className="line-clamp-2">{request.reason}</p>
+                <p><span className="font-medium">Order Number:</span> {request.orderNumber}</p>
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
                 <span>Submitted: {formatDate(request.submittedAt)}</span>
                 {request.updatedAt.getTime() !== request.submittedAt.getTime() && (

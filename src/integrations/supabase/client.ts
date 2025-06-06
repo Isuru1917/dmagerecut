@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://otapyzpvhzvakigmvnvs.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90YXB5enB2aHp2YWtpZ212bnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MjQ3MTYsImV4cCI6MjA2MjEwMDcxNn0.ZkEypUzuIuEsSz6by_aRwfKm8VhQ6e4JhjPvid9xmUo";
+const SUPABASE_URL = "https://xcafgsgwsawigehjinxl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjYWZnc2d3c2F3aWdlaGppbnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5NjM5MzQsImV4cCI6MjA2NDUzOTkzNH0.M1SJ_O0wpAZ70uUCuRSKn6E9cNvZKRTePR8psv9R3WQ"; // You need to replace this with your actual anon public key
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

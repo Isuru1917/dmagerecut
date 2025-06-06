@@ -24,7 +24,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
   });
 
   const [panels, setPanels] = useState<PanelInfo[]>([{
-    panelType: '',
+    panelType: 'General', // Default value since we're removing the field but keeping it for data structure
     panelNumber: '',
     material: '',
     quantity: 1,
@@ -37,7 +37,6 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
 
   type PanelErrorType = {
     [index: number]: {
-      panelType?: string;
       panelNumber?: string;
       material?: string;
       quantity?: string;
@@ -71,11 +70,6 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
     // Validate each panel
     panels.forEach((panel, index) => {
       const panelError: { [key: string]: string } = {};
-
-      if (!panel.panelType.trim()) {
-        panelError.panelType = 'Panel type is required';
-        hasErrors = true;
-      }
 
       if (!panel.panelNumber.trim()) {
         panelError.panelNumber = 'Panel number is required';
@@ -134,7 +128,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
     });
     
     setPanels([{
-      panelType: '',
+      panelType: 'General',
       panelNumber: '',
       material: '',
       quantity: 1,
@@ -176,7 +170,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
 
   const addPanel = () => {
     setPanels([...panels, {
-      panelType: '',
+      panelType: 'General',
       panelNumber: '',
       material: '',
       quantity: 1,
@@ -232,7 +226,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
               value={formData.gliderName}
               onChange={(e) => handleInputChange('gliderName', e.target.value)}
               className={`transition-all duration-200 ${formErrors.gliderName ? 'border-red-500 focus:border-red-500' : ''}`}
-              placeholder="e.g., Advance Alpha 7"
+              placeholder="Enter Glider name"
             />
             {formErrors.gliderName && (
               <p className="text-sm text-red-600">{formErrors.gliderName}</p>
@@ -256,13 +250,26 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
 
         <div className="space-y-2">
           <Label htmlFor="reason">Reason *</Label>
-          <Textarea
-            id="reason"
-            value={formData.reason}
-            onChange={(e) => handleInputChange('reason', e.target.value)}
-            className={`min-h-[80px] transition-all duration-200 ${formErrors.reason ? 'border-red-500 focus:border-red-500' : ''}`}
-            placeholder="Please describe the reason for the panel recut..."
-          />
+          <Select 
+            value={formData.reason} 
+            onValueChange={(value) => handleInputChange('reason', value)}
+          >
+            <SelectTrigger 
+              id="reason"
+              className={`transition-all duration-200 ${formErrors.reason ? 'border-red-500 focus:border-red-500' : ''}`}
+            >
+              <SelectValue placeholder="Select reason for panel recut" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border border-slate-200 shadow-lg z-50">
+              <SelectItem value="Incorrect Cutting Tolerance">Incorrect Cutting Tolerance</SelectItem>
+              <SelectItem value="Material Damage">Material Damage</SelectItem>
+              <SelectItem value="Porosity Test Failure">Porosity Test Failure</SelectItem>
+              <SelectItem value="Mismatch in Color">Mismatch in Color</SelectItem>
+              <SelectItem value="Pattern Issue">Pattern Issue</SelectItem>
+              <SelectItem value="Fabric Deformation or Shrinkage">Fabric Deformation or Shrinkage</SelectItem>
+              <SelectItem value="Design Update or Revision">Design Update or Revision</SelectItem>
+            </SelectContent>
+          </Select>
           {formErrors.reason && (
             <p className="text-sm text-red-600">{formErrors.reason}</p>
           )}
@@ -287,100 +294,55 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
         </div>
         
         {panels.map((panel, index) => (
-          <div key={index} className="border border-slate-200 rounded-lg p-4 space-y-4 bg-slate-50">
+          <div key={index} className="border border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50">
             <div className="flex justify-between items-center">
-              <h4 className="font-medium text-slate-800">Panel #{index + 1}</h4>
+              <h4 className="font-medium text-slate-800 text-sm">Panel #{index + 1}</h4>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => removePanel(index)}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3 h-3" />
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor={`panelType-${index}`}>Panel Type *</Label>
-                <Select 
-                  value={panel.panelType} 
-                  onValueChange={(value) => handlePanelChange(index, 'panelType', value)}
-                >
-                  <SelectTrigger 
-                    id={`panelType-${index}`}
-                    className={`transition-all duration-200 ${panelErrors[index]?.panelType ? 'border-red-500 focus:border-red-500' : ''}`}
-                  >
-                    <SelectValue placeholder="Select panel type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-slate-200 shadow-lg z-50">
-                    <SelectItem value="Top Surface">Top Surface</SelectItem>
-                    <SelectItem value="Bottom Surface">Bottom Surface</SelectItem>
-                    <SelectItem value="Leading Edge">Leading Edge</SelectItem>
-                    <SelectItem value="Trailing Edge">Trailing Edge</SelectItem>
-                    <SelectItem value="Stabilizer">Stabilizer</SelectItem>
-                    <SelectItem value="Tip">Tip</SelectItem>
-                    <SelectItem value="Center Cell">Center Cell</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                {panelErrors[index]?.panelType && (
-                  <p className="text-sm text-red-600">{panelErrors[index].panelType}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={`panelNumber-${index}`}>Panel Number *</Label>
-                <Input
-                  id={`panelNumber-${index}`}
-                  value={panel.panelNumber}
-                  onChange={(e) => handlePanelChange(index, 'panelNumber', e.target.value)}
-                  className={`transition-all duration-200 ${panelErrors[index]?.panelNumber ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="Enter panel number"
-                />
-                {panelErrors[index]?.panelNumber && (
-                  <p className="text-sm text-red-600">{panelErrors[index].panelNumber}</p>
-                )}
-              </div>
+            {/* Panel Number - Full width */}
+            <div className="space-y-1">
+              <Label htmlFor={`panelNumber-${index}`} className="text-sm">Panel Number *</Label>
+              <Textarea
+                id={`panelNumber-${index}`}
+                value={panel.panelNumber}
+                onChange={(e) => handlePanelChange(index, 'panelNumber', e.target.value)}
+                className={`min-h-[60px] transition-all duration-200 text-sm ${panelErrors[index]?.panelNumber ? 'border-red-500 focus:border-red-500' : ''}`}
+                placeholder="Enter panel numbers (one per line or separated by commas)..."
+              />
+              {panelErrors[index]?.panelNumber && (
+                <p className="text-xs text-red-600">{panelErrors[index].panelNumber}</p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <MaterialAutocomplete
-                  id={`material-${index}`}
-                  value={panel.material}
-                  onChange={(value) => handlePanelChange(index, 'material', value)}
-                  required={true}
-                  error={panelErrors[index]?.material}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
-                <Input
-                  id={`quantity-${index}`}
-                  type="number"
-                  min="1"
-                  value={panel.quantity}
-                  onChange={(e) => handlePanelChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                  className={`transition-all duration-200 ${panelErrors[index]?.quantity ? 'border-red-500 focus:border-red-500' : ''}`}
-                  placeholder="1"
-                />
-                {panelErrors[index]?.quantity && (
-                  <p className="text-sm text-red-600">{panelErrors[index].quantity}</p>
-                )}
-              </div>
+            {/* Material - Full width */}
+            <div className="space-y-1">
+              <MaterialAutocomplete
+                id={`material-${index}`}
+                value={panel.material}
+                onChange={(value) => handlePanelChange(index, 'material', value)}
+                required={true}
+                error={panelErrors[index]?.material}
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor={`side-${index}`}>Side *</Label>
+            {/* Side and Quantity - Same row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor={`side-${index}`} className="text-sm">Side *</Label>
                 <Select 
                   value={panel.side} 
                   onValueChange={(value: any) => handlePanelChange(index, 'side', value)}
                 >
-                  <SelectTrigger id={`side-${index}`} className="transition-all duration-200">
+                  <SelectTrigger id={`side-${index}`} className="transition-all duration-200 h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-slate-200 shadow-lg z-50">
@@ -389,6 +351,29 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
                     <SelectItem value="Left & Right Side">Left & Right Side</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`quantity-${index}`} className="text-sm">Quantity *</Label>
+                <Select 
+                  value={panel.quantity.toString()} 
+                  onValueChange={(value) => handlePanelChange(index, 'quantity', parseInt(value))}
+                >
+                  <SelectTrigger 
+                    id={`quantity-${index}`}
+                    className={`transition-all duration-200 h-9 text-sm ${panelErrors[index]?.quantity ? 'border-red-500 focus:border-red-500' : ''}`}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-slate-200 shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {panelErrors[index]?.quantity && (
+                  <p className="text-xs text-red-600">{panelErrors[index].quantity}</p>
+                )}
               </div>
             </div>
           </div>
