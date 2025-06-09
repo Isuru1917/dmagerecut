@@ -82,6 +82,7 @@ const RecentRequests: React.FC<RecentRequestsProps> = ({ requests, onStatusUpdat
               
               <div className="text-sm text-slate-600 space-y-1">
                 <p><span className="font-medium">Order Number:</span> {request.orderNumber}</p>
+                <p><span className="font-medium">Requested by:</span> {request.requestedBy}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">

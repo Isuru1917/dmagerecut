@@ -11,6 +11,7 @@ export interface DamageRequest {
   gliderName: string;
   orderNumber: string;
   reason: string;
+  requestedBy: string;
   panels: PanelInfo[];
   status: 'Pending' | 'In Progress' | 'Done';
   submittedAt: Date;

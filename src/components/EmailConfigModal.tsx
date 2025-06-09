@@ -1,54 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Key, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Globe, CheckCircle, AlertCircle, Mail, Database, Send, ExternalLink } from 'lucide-react';
 
 interface EmailConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type EmailProvider = 'gmail' | 'outlook';
-
 const EmailConfigModal: React.FC<EmailConfigModalProps> = ({ isOpen, onClose }) => {
-  const [emailProvider, setEmailProvider] = useState<EmailProvider>('gmail');
-  const [gmailUser, setGmailUser] = useState('');
-  const [gmailAppPassword, setGmailAppPassword] = useState('');
-  const [outlookUser, setOutlookUser] = useState('');
-  const [outlookAppPassword, setOutlookAppPassword] = useState('');
+  const [scriptUrl, setScriptUrl] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [testStatus, setTestStatus] = useState<{ status: 'idle' | 'testing' | 'success' | 'error'; message?: string }>({ status: 'idle' });
+
   // Load existing settings when modal opens
   useEffect(() => {
     if (isOpen) {
-      const savedProvider = localStorage.getItem('email_provider') as EmailProvider;
-      if (savedProvider && (savedProvider === 'gmail' || savedProvider === 'outlook')) {
-        setEmailProvider(savedProvider);
-      }
-      
-      setGmailUser(localStorage.getItem('gmail_user') || '');
-      setGmailAppPassword(localStorage.getItem('gmail_app_password') || '');
-      setOutlookUser(localStorage.getItem('outlook_user') || '');
-      setOutlookAppPassword(localStorage.getItem('outlook_app_password') || '');
+      setScriptUrl(localStorage.getItem('google_script_url') || '');
+      setCompanyName(localStorage.getItem('company_name') || 'Panel Recut Management System');
     }
   }, [isOpen]);
 
   const handleSave = () => {
-    localStorage.setItem('email_provider', emailProvider);
+    localStorage.setItem('google_script_url', scriptUrl);
+    localStorage.setItem('company_name', companyName);
     
-    if (emailProvider === 'gmail') {
-      localStorage.setItem('gmail_user', gmailUser);
-      localStorage.setItem('gmail_app_password', gmailAppPassword);
-    } else {
-      localStorage.setItem('outlook_user', outlookUser);
-      localStorage.setItem('outlook_app_password', outlookAppPassword);
-    }
+    // Clean up old email provider settings
+    localStorage.removeItem('email_provider');
+    localStorage.removeItem('gmail_user');
+    localStorage.removeItem('gmail_app_password');
+    localStorage.removeItem('outlook_user');
+    localStorage.removeItem('outlook_app_password');
     
     onClose();
   };
+  const handleTest = async () => {
+    if (!scriptUrl) {
+      setTestStatus({ status: 'error', message: 'Please enter a Google Apps Script URL' });
+      return;
+    }
+
+    setTestStatus({ status: 'testing', message: 'Testing connection...' });
+    
+    try {
+      const response = await fetch(scriptUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setTestStatus({ status: 'success', message: 'Connection successful! Google Apps Script is responding.' });
+      } else {
+        setTestStatus({ status: 'error', message: `Connection failed: HTTP ${response.status}` });
+      }
+    } catch (error: any) {
+      setTestStatus({ status: 'error', message: `Connection error: ${error.message}` });
+    }
+  };
+  const handleReset = () => {
+    setScriptUrl('');
+    setCompanyName('Panel Recut Management System');
+    setTestStatus({ status: 'idle' });
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">        {/* Header */}
+      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Email Configuration</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Email & Data Configuration</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
@@ -57,225 +79,179 @@ const EmailConfigModal: React.FC<EmailConfigModalProps> = ({ isOpen, onClose }) 
           </button>
         </div>
 
-        {/* Provider Selection */}
+        {/* Google Apps Script Info */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Choose Email Provider</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setEmailProvider('gmail')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                emailProvider === 'gmail'
-                  ? 'border-blue-500 bg-blue-50 text-blue-900'
-                  : 'border-slate-200 hover:border-slate-300 text-slate-700'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Mail className="w-6 h-6" />
-                <div className="text-left">
-                  <div className="font-semibold">Gmail SMTP</div>
-                  <div className="text-sm opacity-70">Use your Gmail account</div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <Globe className="w-6 h-6 text-green-600" />
+              <h3 className="text-lg font-semibold text-green-900">Google Apps Script Integration</h3>
+            </div>
+            <div className="space-y-4 text-green-800">
+              <p><strong>✅ Enhanced Solution!</strong> This system now uses Google Apps Script for:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">Email notifications</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Database className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">Google Sheets data storage</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">No passwords required</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Send className="w-4 h-4 text-green-600" />
+                  <span className="text-sm">Automatic data logging</span>
                 </div>
               </div>
-            </button>
-            
-            <button
-              onClick={() => setEmailProvider('outlook')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                emailProvider === 'outlook'
-                  ? 'border-blue-500 bg-blue-50 text-blue-900'
-                  : 'border-slate-200 hover:border-slate-300 text-slate-700'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Mail className="w-6 h-6" />
-                <div className="text-left">
-                  <div className="font-semibold">Outlook SMTP</div>
-                  <div className="text-sm opacity-70">Use your Outlook account</div>
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>        {/* Gmail Instructions */}
-        {emailProvider === 'gmail' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center space-x-3 mb-3">
-              <Mail className="w-6 h-6 text-blue-600" />
-              <h3 className="text-lg font-semibold text-blue-900">Gmail SMTP Setup</h3>
-            </div>
-            <div className="space-y-3 text-blue-800">
-              <p><strong>✅ Perfect! You've already generated your App Password.</strong></p>
-              <ol className="list-decimal list-inside space-y-2 ml-4">
-                <li>Enter your Gmail address below</li>
-                <li>Enter the 16-character App Password you generated</li>
-                <li>Test by submitting a panel recut request</li>
-              </ol>
+              <p className="text-sm mt-3">
+                Deploy the provided Google Apps Script and enter the web app URL below to enable both email notifications and automatic data storage in Google Sheets.
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Outlook Instructions */}
-        {emailProvider === 'outlook' && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center space-x-3 mb-3">
-              <Mail className="w-6 h-6 text-orange-600" />
-              <h3 className="text-lg font-semibold text-orange-900">Outlook SMTP Setup</h3>
-            </div>
-            <div className="space-y-3 text-orange-800">
-              <p><strong>🔧 Follow these steps to generate your App Password:</strong></p>
-              <ol className="list-decimal list-inside space-y-2 ml-4">
-                <li>Go to <strong>Security settings</strong> at account.microsoft.com</li>
-                <li>Enable <strong>Two-factor authentication</strong> if not already enabled</li>
-                <li>Go to <strong>App passwords</strong> and generate a new password</li>
-                <li>Enter your Outlook email and the generated App Password below</li>
-                <li>Test by submitting a panel recut request</li>
-              </ol>
-            </div>
+          {/* Setup Instructions */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-blue-900 mb-3">📋 Quick Setup Instructions</h4>
+            <ol className="list-decimal list-inside space-y-2 text-blue-800 text-sm">
+              <li>Follow the setup guide in <code className="bg-blue-100 px-2 py-1 rounded">GOOGLE_SHEETS_INTEGRATION_GUIDE.md</code></li>
+              <li>Deploy the Google Apps Script as a web app</li>
+              <li>Copy the web app URL and paste it below</li>
+              <li>Test the connection to verify everything works</li>
+            </ol>
           </div>
-        )}        {/* Configuration Form */}
+        </div>        {/* Configuration Form */}
         <div className="space-y-6">
-          {/* Gmail Configuration */}
-          {emailProvider === 'gmail' && (
-            <>
-              {/* Gmail User */}
-              <div>
-                <label htmlFor="gmailUser" className="block text-sm font-medium text-slate-700 mb-2">
-                  <Mail className="inline w-4 h-4 mr-2" />
-                  Gmail Address
-                </label>
-                <input
-                  id="gmailUser"
-                  type="email"
-                  value={gmailUser}
-                  onChange={(e) => setGmailUser(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="your.email@gmail.com"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  Your Gmail address that will send the notifications
-                </p>
-              </div>
+          {/* Google Apps Script URL */}
+          <div>
+            <label htmlFor="scriptUrl" className="block text-sm font-medium text-slate-700 mb-2">
+              <Globe className="inline w-4 h-4 mr-2" />
+              Google Apps Script Web App URL *
+            </label>
+            <input
+              id="scriptUrl"
+              type="url"
+              value={scriptUrl}
+              onChange={(e) => setScriptUrl(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              placeholder="https://script.google.com/macros/s/[YOUR_SCRIPT_ID]/exec"
+            />
+            <p className="text-xs text-slate-600 mt-1">
+              The deployed Google Apps Script web app URL that handles email notifications and data storage
+            </p>
+          </div>
 
-              {/* Gmail App Password */}
-              <div>
-                <label htmlFor="gmailAppPassword" className="block text-sm font-medium text-slate-700 mb-2">
-                  <Key className="inline w-4 h-4 mr-2" />
-                  Gmail App Password
-                </label>
-                <input
-                  id="gmailAppPassword"
-                  type="password"
-                  value={gmailAppPassword}
-                  onChange={(e) => setGmailAppPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="xxxx xxxx xxxx xxxx (16 characters)"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  The 16-character App Password you generated in your Google Account settings
-                </p>
-              </div>
-            </>
-          )}
+          {/* Company Name */}
+          <div>
+            <label htmlFor="companyName" className="block text-sm font-medium text-slate-700 mb-2">
+              <Mail className="inline w-4 h-4 mr-2" />
+              Company Name
+            </label>
+            <input
+              id="companyName"
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              placeholder="Panel Recut Management System"
+            />
+            <p className="text-xs text-slate-600 mt-1">
+              This name will appear in email notifications and system communications
+            </p>
+          </div>
 
-          {/* Outlook Configuration */}
-          {emailProvider === 'outlook' && (
-            <>
-              {/* Outlook User */}
-              <div>
-                <label htmlFor="outlookUser" className="block text-sm font-medium text-slate-700 mb-2">
-                  <Mail className="inline w-4 h-4 mr-2" />
-                  Outlook Email Address
-                </label>
-                <input
-                  id="outlookUser"
-                  type="email"
-                  value={outlookUser}
-                  onChange={(e) => setOutlookUser(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
-                  placeholder="your.email@outlook.com"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  Your Outlook/Hotmail email address that will send the notifications
-                </p>
+          {/* Test Connection */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-slate-700">Test Connection</label>
+              <button
+                onClick={handleTest}
+                disabled={!scriptUrl || testStatus.status === 'testing'}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>{testStatus.status === 'testing' ? 'Testing...' : 'Test Connection'}</span>
+              </button>
+            </div>
+            
+            {testStatus.status !== 'idle' && (
+              <div className={`p-3 rounded-lg border ${
+                testStatus.status === 'success' 
+                  ? 'bg-green-50 border-green-200' 
+                  : testStatus.status === 'error'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-blue-50 border-blue-200'
+              }`}>
+                <div className="flex items-center space-x-2">
+                  {testStatus.status === 'success' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                  {testStatus.status === 'error' && <AlertCircle className="w-4 h-4 text-red-600" />}
+                  {testStatus.status === 'testing' && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />}
+                  <span className={`text-sm ${
+                    testStatus.status === 'success' 
+                      ? 'text-green-800' 
+                      : testStatus.status === 'error'
+                      ? 'text-red-800'
+                      : 'text-blue-800'
+                  }`}>
+                    {testStatus.message}
+                  </span>
+                </div>
               </div>
+            )}
+          </div>
 
-              {/* Outlook App Password */}
-              <div>
-                <label htmlFor="outlookAppPassword" className="block text-sm font-medium text-slate-700 mb-2">
-                  <Key className="inline w-4 h-4 mr-2" />
-                  Outlook App Password
-                </label>
-                <input
-                  id="outlookAppPassword"
-                  type="password"
-                  value={outlookAppPassword}
-                  onChange={(e) => setOutlookAppPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
-                  placeholder="xxxx xxxx xxxx xxxx (16 characters)"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  The 16-character App Password you generated in your Microsoft Account settings
-                </p>
-              </div>
-            </>
-          )}          {/* Current Status */}
+          {/* Current Status */}
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <h4 className="font-semibold text-slate-900 mb-2">Current Configuration Status</h4>
+            <h4 className="font-semibold text-slate-900 mb-3">Current Configuration Status</h4>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-700 font-medium">
-                  Active Provider: {emailProvider === 'gmail' ? 'Gmail SMTP' : 'Outlook SMTP'}
+                {scriptUrl ? (
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-600" />
+                )}
+                <span className="text-sm text-slate-700">
+                  Google Apps Script URL: {scriptUrl ? 'Configured' : 'Not configured'}
                 </span>
               </div>
               
-              {emailProvider === 'gmail' && (
-                <>
-                  <div className="flex items-center space-x-2">
-                    {gmailUser ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-red-600" />
-                    )}
-                    <span className="text-sm text-slate-700">
-                      Gmail: {gmailUser || 'Not configured'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {gmailAppPassword ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-red-600" />
-                    )}
-                    <span className="text-sm text-slate-700">
-                      App Password: {gmailAppPassword ? 'Configured' : 'Not configured'}
-                    </span>
-                  </div>
-                </>
-              )}
+              <div className="flex items-center space-x-2">
+                {companyName ? (
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-orange-600" />
+                )}
+                <span className="text-sm text-slate-700">
+                  Company Name: {companyName || 'Using default'}
+                </span>
+              </div>
               
-              {emailProvider === 'outlook' && (
-                <>
-                  <div className="flex items-center space-x-2">
-                    {outlookUser ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-red-600" />
-                    )}
-                    <span className="text-sm text-slate-700">
-                      Outlook: {outlookUser || 'Not configured'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {outlookAppPassword ? (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 text-red-600" />
-                    )}
-                    <span className="text-sm text-slate-700">
-                      App Password: {outlookAppPassword ? 'Configured' : 'Not configured'}
-                    </span>
-                  </div>
-                </>
-              )}
+              <div className="flex items-center space-x-2">
+                {testStatus.status === 'success' ? (
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-slate-400" />
+                )}
+                <span className="text-sm text-slate-700">
+                  Connection: {testStatus.status === 'success' ? 'Verified' : 'Not tested'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Migration Notice */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <ExternalLink className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div className="text-yellow-800">
+                <h4 className="font-semibold mb-1">Migration from SMTP</h4>
+                <p className="text-sm">
+                  This system has been upgraded from Gmail/Outlook SMTP to Google Apps Script. 
+                  Your old email settings will be automatically removed when you save this configuration.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -288,23 +264,17 @@ const EmailConfigModal: React.FC<EmailConfigModalProps> = ({ isOpen, onClose }) 
           >
             Cancel
           </button>
-          <div className="space-x-3">            <button
-              onClick={() => {
-                if (emailProvider === 'gmail') {
-                  setGmailUser('');
-                  setGmailAppPassword('');
-                } else {
-                  setOutlookUser('');
-                  setOutlookAppPassword('');
-                }
-              }}
+          <div className="space-x-3">
+            <button
+              onClick={handleReset}
               className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Reset
             </button>
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={!scriptUrl}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
             >
               Save Configuration
             </button>

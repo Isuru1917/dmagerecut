@@ -8,6 +8,7 @@ CREATE TABLE damage_requests (
     glider_name VARCHAR(255) NOT NULL,
     order_number VARCHAR(255) NOT NULL,
     reason TEXT NOT NULL,
+    requested_by VARCHAR(255) NOT NULL,
     panels JSONB NOT NULL,
     status VARCHAR(50) DEFAULT 'Pending' CHECK (status IN ('Pending', 'In Progress', 'Done')),
     notes TEXT,
@@ -52,14 +53,14 @@ CREATE POLICY "Allow anonymous access" ON email_settings
     FOR ALL USING (true);
 
 -- Insert sample data (optional)
-INSERT INTO damage_requests (glider_name, order_number, reason, panels, status, notes) VALUES
-('Advance Alpha 7', 'ORD-2024-001', 'Small tear near leading edge, approximately 3cm', 
+INSERT INTO damage_requests (glider_name, order_number, reason, requested_by, panels, status, notes) VALUES
+('Advance Alpha 7', 'ORD-2024-001', 'Small tear near leading edge, approximately 3cm', 'John Smith',
  '[{"panelType": "Top Surface", "panelNumber": "P-42", "material": "Dominico N20D", "quantity": 1, "side": "Left Side"}]',
  'In Progress', null),
-('Ozone Rush 5', 'ORD-2024-002', 'UV damage causing discoloration and fabric weakening',
+('Ozone Rush 5', 'ORD-2024-002', 'UV damage causing discoloration and fabric weakening', 'Sarah Johnson',
  '[{"panelType": "Bottom Surface", "panelNumber": "P-15", "material": "Porcher Skytex 27", "quantity": 2, "side": "Left & Right Side"}]',
  'Pending', null),
-('Gin Boomerang 12', 'ORD-2024-003', 'Complete panel replacement needed after tree landing',
+('Gin Boomerang 12', 'ORD-2024-003', 'Complete panel replacement needed after tree landing', 'Mike Wilson',
  '[{"panelType": "Stabilizer", "panelNumber": "P-8", "material": "Porcher Skytex 38", "quantity": 1, "side": "Right Side"}, {"panelType": "Leading Edge", "panelNumber": "P-3", "material": "Dokdo 40D", "quantity": 1, "side": "Right Side"}]',
  'Done', 'Completed ahead of schedule');
 

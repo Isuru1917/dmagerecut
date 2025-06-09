@@ -113,58 +113,58 @@ export class EmailNotificationService {
           
           <div style="background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-top: none;">
             <h2 style="color: #1e40af; margin-top: 0;">Request Details</h2>
-            
-            <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+              <table style="width: 100%; border-collapse: collapse; margin: 15px 0; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
               <tr>
-                <td style="padding: 8px; font-weight: bold; background: #f1f5f9;">Glider Name:</td>
-                <td style="padding: 8px; background: white;">${request.gliderName}</td>
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Glider Name:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">${request.gliderName}</td>
               </tr>
               <tr>
-                <td style="padding: 8px; font-weight: bold; background: #f1f5f9;">Order Number:</td>
-                <td style="padding: 8px; background: white;">${request.orderNumber}</td>
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Order Number:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">${request.orderNumber}</td>
+              </tr>
+              ${request.requestedBy ? `
+              <tr>
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Requested by:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">${request.requestedBy}</td>
+              </tr>
+              ` : ''}
+              <tr>
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Reason:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">${request.reason}</td>
               </tr>
               <tr>
-                <td style="padding: 8px; font-weight: bold; background: #f1f5f9;">Reason:</td>
-                <td style="padding: 8px; background: white;">${request.reason}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px; font-weight: bold; background: #f1f5f9;">Status:</td>
-                <td style="padding: 8px; background: white;">
-                  <span style="background: #fbbf24; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Status:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">
+                  <span style="background-color: #fbbf24; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; font-family: Arial, sans-serif;">
                     ${request.status}
                   </span>
                 </td>
               </tr>
               <tr>
-                <td style="padding: 8px; font-weight: bold; background: #f1f5f9;">Submitted:</td>
-                <td style="padding: 8px; background: white;">${new Date(request.submittedAt).toLocaleString()}</td>
+                <td style="padding: 8px; font-weight: bold; background-color: #f1f5f9; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">Submitted:</td>
+                <td style="padding: 8px; background-color: white; border: 1px solid #e2e8f0; font-family: Arial, sans-serif;">${new Date(request.submittedAt).toLocaleString()}</td>
               </tr>
-            </table>
-
-            <h3 style="color: #1e40af; margin-top: 25px;">Panel Information</h3>
-            <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            </table>            <h3 style="color: #1e40af; margin-top: 25px; font-family: Arial, sans-serif;">Panel Information</h3>
+            <table style="width: 100%; border-collapse: collapse; margin: 15px 0; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
               <thead>
-                <tr style="background: #1e40af; color: white;">
-                  <th style="padding: 10px; text-align: left;">Panel Number</th>
-                  <th style="padding: 10px; text-align: left;">Material</th>
-                  <th style="padding: 10px; text-align: left;">Quantity</th>
-                  <th style="padding: 10px; text-align: left;">Side</th>
+                <tr style="background-color: #1e40af; color: white;">
+                  <th style="padding: 10px; text-align: left; border: 1px solid #1e40af; font-family: Arial, sans-serif;">Panel Number</th>
+                  <th style="padding: 10px; text-align: left; border: 1px solid #1e40af; font-family: Arial, sans-serif;">Material</th>
+                  <th style="padding: 10px; text-align: left; border: 1px solid #1e40af; font-family: Arial, sans-serif;">Quantity</th>
+                  <th style="padding: 10px; text-align: left; border: 1px solid #1e40af; font-family: Arial, sans-serif;">Side</th>
                 </tr>
               </thead>
               <tbody>
                 ${panelsHtml}
               </tbody>
-            </table>
-
-            ${request.notes ? `
-              <h3 style="color: #1e40af; margin-top: 25px;">Additional Notes</h3>
-              <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+            </table>            ${request.notes ? `
+              <h3 style="color: #1e40af; margin-top: 25px; font-family: Arial, sans-serif;">Additional Notes</h3>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6; font-family: Arial, sans-serif;">
                 ${request.notes}
               </div>
             ` : ''}
           </div>
-          
-          <div style="background: #1e293b; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center; font-size: 14px;">
+            <div style="background-color: #1e293b; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center; font-size: 14px; font-family: Arial, sans-serif;">
             <p style="margin: 0;">This is an automated notification from ${this.COMPANY_NAME}</p>
             <p style="margin: 5px 0 0 0; opacity: 0.8;">Please do not reply to this email</p>
           </div>

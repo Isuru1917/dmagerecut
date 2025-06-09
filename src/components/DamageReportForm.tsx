@@ -20,6 +20,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
     gliderName: '',
     orderNumber: '',
     reason: '',
+    requestedBy: '',
     notes: ''
   });
 
@@ -64,6 +65,11 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
 
     if (!formData.reason.trim()) {
       newFormErrors.reason = 'Reason is required';
+      hasErrors = true;
+    }
+
+    if (!formData.requestedBy.trim()) {
+      newFormErrors.requestedBy = 'Requested by is required';
       hasErrors = true;
     }
 
@@ -124,6 +130,7 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
       gliderName: '',
       orderNumber: '',
       reason: '',
+      requestedBy: '',
       notes: ''
     });
     
@@ -272,6 +279,20 @@ const DamageReportForm: React.FC<DamageReportFormProps> = ({ onSubmit }) => {
           </Select>
           {formErrors.reason && (
             <p className="text-sm text-red-600">{formErrors.reason}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="requestedBy">Requested By *</Label>
+          <Input
+            id="requestedBy"
+            value={formData.requestedBy}
+            onChange={(e) => handleInputChange('requestedBy', e.target.value)}
+            className={`transition-all duration-200 ${formErrors.requestedBy ? 'border-red-500 focus:border-red-500' : ''}`}
+            placeholder="Enter name of person requesting the recut"
+          />
+          {formErrors.requestedBy && (
+            <p className="text-sm text-red-600">{formErrors.requestedBy}</p>
           )}
         </div>
       </div>

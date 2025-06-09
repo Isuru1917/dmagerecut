@@ -129,12 +129,12 @@ const Index = () => {
   };
 
   const handleNewRequest = async (newRequest: Omit<DamageRequest, 'id' | 'submittedAt' | 'updatedAt'>) => {
-    try {
-      // Save to Supabase
+    try {      // Save to Supabase
       const savedRequest = await damageRequestService.createDamageRequest({
         gliderName: newRequest.gliderName,
         orderNumber: newRequest.orderNumber,
         reason: newRequest.reason,
+        requestedBy: newRequest.requestedBy,
         panels: newRequest.panels,
         notes: newRequest.notes,
         status: newRequest.status

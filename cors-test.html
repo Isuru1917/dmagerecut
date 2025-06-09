@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Apps Script CORS Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .config {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 8px;
+      margin: 5px 0 15px 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Google Apps Script CORS Test</h1>
+  
+  <div class="config">
+    <label for="scriptUrl">Google Apps Script URL:</label>
+    <input 
+      type="text" 
+      id="scriptUrl" 
+      placeholder="https://script.google.com/macros/s/your-deployment-id/exec" 
+    />
+    
+    <label for="useCorsProxy">
+      <input type="checkbox" id="useCorsProxy" checked /> 
+      Use CORS Proxy (for local testing)
+    </label>
+
+    <label for="proxyUrl" id="proxyUrlLabel" style="margin-top: 10px;">CORS Proxy URL:</label>
+    <input 
+      type="text" 
+      id="proxyUrl" 
+      placeholder="http://localhost:8082/" 
+      value="http://localhost:8082/"
+    />
+  </div>
+  
+  <button id="testDirectGet">Test Direct GET</button>
+  <button id="testDirectPost">Test Direct POST</button>
+  <button id="testProxiedGet">Test Proxied GET</button>
+  <button id="testProxiedPost">Test Proxied POST</button>
+  
+  <div id="result" class="result"></div>
+
+  <script>
+    // Elements
+    const scriptUrlInput = document.getElementById('scriptUrl');
+    const proxyUrlInput = document.getElementById('proxyUrl');
+    const useCorsProxyCheckbox = document.getElementById('useCorsProxy');
+    const resultDiv = document.getElementById('result');
+    
+    // Load URL from localStorage if available
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUrl = localStorage.getItem('google_script_url');
+      if (savedUrl) {
+        scriptUrlInput.value = savedUrl;
+      }
+    });
+    
+    // Save URL to localStorage when changed
+    scriptUrlInput.addEventListener('change', () => {
+      localStorage.setItem('google_script_url', scriptUrlInput.value);
+    });
+    
+    // Function to apply CORS proxy to URL
+    function applyProxy(url) {
+      if (!url) return '';
+      return `${proxyUrlInput.value}${url}`;
+    }
+    
+    // Function to display results
+    function displayResult(success, data, error = null) {
+      resultDiv.innerHTML = '';
+      resultDiv.className = 'result ' + (success ? 'success' : 'error');
+      
+      if (success) {
+        resultDiv.innerHTML = `
+          <h3>✅ Success!</h3>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } else {
+        resultDiv.innerHTML = `
+          <h3>❌ Error</h3>
+          <p>${error}</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      }
+    }
+    
+    // Test GET request directly
+    document.getElementById('testDirectGet').addEventListener('click', async () => {
+      if (!scriptUrlInput.value) {
+        alert('Please enter a Google Apps Script URL');
+        return;
+      }
+      
+      try {
+        resultDiv.innerHTML = '<p>Testing direct GET request...</p>';
+        const response = await fetch(scriptUrlInput.value, {
+          method: 'GET',
+          mode: 'cors'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          displayResult(true, data);
+        } else {
+          const text = await response.text();
+          displayResult(false, { status: response.status, statusText: response.statusText }, text);
+        }
+      } catch (error) {
+        displayResult(false, { name: error.name }, error.message);
+      }
+    });
+    
+    // Test POST request directly
+    document.getElementById('testDirectPost').addEventListener('click', async () => {
+      if (!scriptUrlInput.value) {
+        alert('Please enter a Google Apps Script URL');
+        return;
+      }
+      
+      try {
+        resultDiv.innerHTML = '<p>Testing direct POST request...</p>';
+        const response = await fetch(scriptUrlInput.value, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'connection_test',
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          displayResult(true, data);
+        } else {
+          const text = await response.text();
+          displayResult(false, { status: response.status, statusText: response.statusText }, text);
+        }
+      } catch (error) {
+        displayResult(false, { name: error.name }, error.message);
+      }
+    });
+    
+    // Test GET request via proxy
+    document.getElementById('testProxiedGet').addEventListener('click', async () => {
+      if (!scriptUrlInput.value) {
+        alert('Please enter a Google Apps Script URL');
+        return;
+      }
+      
+      try {
+        resultDiv.innerHTML = '<p>Testing proxied GET request...</p>';
+        const url = applyProxy(scriptUrlInput.value);
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'cors'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          displayResult(true, data);
+        } else {
+          const text = await response.text();
+          displayResult(false, { status: response.status, statusText: response.statusText }, text);
+        }
+      } catch (error) {
+        displayResult(false, { name: error.name }, error.message);
+      }
+    });
+    
+    // Test POST request via proxy
+    document.getElementById('testProxiedPost').addEventListener('click', async () => {
+      if (!scriptUrlInput.value) {
+        alert('Please enter a Google Apps Script URL');
+        return;
+      }
+      
+      try {
+        resultDiv.innerHTML = '<p>Testing proxied POST request...</p>';
+        const url = applyProxy(scriptUrlInput.value);
+        const response = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'connection_test',
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          displayResult(true, data);
+        } else {
+          const text = await response.text();
+          displayResult(false, { status: response.status, statusText: response.statusText }, text);
+        }
+      } catch (error) {
+        displayResult(false, { name: error.name }, error.message);
+      }
+    });
+  </script>
+</body>
+</html>
